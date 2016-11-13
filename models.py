@@ -5,14 +5,15 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
  
 
- def get_sentinnel_user():
+
+def get_sentinel_user():
 	return get_user_model.objects.get_or_create(username="deleted")[0]
 
 class Timestamp(models.Model):
 	created_on = models.DateTimeField(auto_now = True)
 	updated_on = models.DateTimeField(auto_now_add = True)
 	published_date = models.DateTimeField(blank=True, null=True)
-	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET(get_sentinnel_user))
+	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET(get_sentinel_user))
 	draft = models.BooleanField(default = False)
 	class Meta:
 		abstract = True
