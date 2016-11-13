@@ -10,11 +10,24 @@ handler500 = views.handler500
 urlpatterns = [
 
 	#Default Pages Routes
-	url(r'^about/$', views.AboutUsPageView.as_view(), name = 'aboutus'),
-	url(r'^contact/$', views.ContactUsPageView.as_view(), name = 'contactus'),
-	url(r'^$',  views.HomePageView.as_view(), name='homepage'),
+	url(r'^$',  views.HomePageView.as_view(), name='home-page'),
+	url(r'^aboutus/$', views.AboutUsPageView.as_view(), name = 'about-us'),
+	url(r'^contactus/$', views.ContactUsPageView.as_view(), name = 'contact-us'),
+
 
 	#Default Apps Routes
-	url(r'^newslettersignup/$', views.newsletter_signup , name = 'newslettersignup'),
+
+	#Pages
+	
+	#Email Campaign
+	url(r'^subscribe/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
+	url(r'^subscribe/list/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
+	url(r'^unsubscribe/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
+
+	#Banner
+
+	#Category
+
+	#Tag
 
 ]

@@ -1,81 +1,157 @@
 from django.contrib import messages
 from django.shortcuts import render, HttpResponseRedirect
-from django.views.generic.base import TemplateView
-from .forms import ContactForm, NewsletterForm
+from django.views.generic import DetailView, ListView
+from django.views.generic.base import TemplateView, View
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from .forms import (ContactForm, 
+					EmailMarketingSignUpForm,
+					CategoryForm
+					)
+from django.urls import reverse_lazy
+from .models import (Tag,
+				Category,
+				About_website,
+				Contacted_Us,
+				WebsitePage,
+				WebProfile,
+				Banner,
+				EmailMarketingSignUp,
+				EmailMarketingConfirmed
+				)
+
+
+#Custom Error Pages
+	#templates at _cep/
+def handler400(request):
+	template = 'webcore/_cep/400.html'
+	context = {}
+	return render(request, template, context)
+
+def handler403(request):
+	template = 'webcore/_cep/403.html'
+	context = {}
+	return render(request, template, context)
+
+def handler404(request):
+	template = 'webcore/_cep/404.html'
+	context = {}
+	return render(request, template, context)
+
+def handler500(request):
+	template = 'webcore/_cep/500.html'
+	context = {}
+	return render(request, template, context)
+
+
+
 
 
 
 #Default Website Pages
 	#templates at _dwp/
 class HomePageView(TemplateView):
-	template_name = "_dwp/home.html"
+	template_name = "webcore/_dwp/home.html"
 
 
 class AboutUsPageView(TemplateView):
-	template_name = "_dwp/aboutus.html"
+	template_name = "webcore/_dwp/aboutus.html"
 
 
 class ContactUsPageView(TemplateView):
-	template_name = "_dwp/contactus.html"
+	template_name = "webcore/_dwp/contactus.html"
 
 
 class PageView(TemplateView):
-	template_name = "_dwp/page.html"
+	template_name = "webcore/_dwp/page.html"
 
 
-
-#Custom Error Pages
-	#templates at _cep/
-def handler400(request):
-	template = '_cep/400.html'
-	context = {}
-	return render(request, template, context)
-
-def handler403(request):
-	template = '_cep/403.html'
-	context = {}
-	return render(request, template, context)
-
-def handler404(request):
-	template = '_cep/404.html'
-	context = {}
-	return render(request, template, context)
-
-def handler500(request):
-	template = '_cep/500.html'
-	context = {}
-	return render(request, template, context)
 
 
 
 
 #Default Webste Apps
 	#templates at _dwa/
-def newsletter_signup(request):
-	source = request.META.get('HTTP_REFERER')
-	news_signup = NewsletterForm(request.POST or None)
-	if news_signup.is_valid():
-		email = news_signup.clean_data.get('email')
-		obj, created = EmailMarketingSignUp.objects.get_or_create(email = email)
-		if created:
-			messages.success(request, "You are now on our list, you'll hear from us from time to time")
-		elif not created and obj:
-			messages.success(request, "You already subscribed to our list. We'll now send you updates")
-		else:
-			messages.error(request, "Oh! something went wrong. Sorry about that.")
-	else:
-		messages.error(request, "Oh! something went wrong. Sorry about that.")
-	return HttpResponseRedirect(source)
+
+#Category App
+class CategoryView:
+	form_class = CategoryForm
+	success_url = reverse_lazy("webcore/_dwa/category-detail")
+	
+class CreateCategory(CategoryView, CreateView):
+
+	def get_context_data(*args, **kwargs):
+		context = super(CreateCategory, self).get_context_data(**kwargs)
+		context['head_title'] = "Create New Category"
+		context["page_title"] = "Create New category"
+		context["btn_title"] = "Create Category"
+		return context
+
+class UpdateCatgory(CategoryView, UpdateView):
+	
+	def get_context_data(*args, **kwargs):
+		context = super(CreateCategory, self).get_context_data(**kwargs)
+		context['head_title'] = "Update Category"
+		context["page_title"] = "Update category"
+		context["btn_title"] = "Update Category"
+		return context
 
 
-def contact(request):
-	new_contact = ContactForm(request.POST or None)
-	if new_contact.is_valid():
-		new_contact.save()
-		messages.success(request, "Thank you for contacting us, we'll reply to your enquiry as soon as we can")
-		return HttpResponseRedirect('/')
-	if new_contact.errors:
-		messages.warning(request, "Sorry Something went wrong")
-	template = 'contact.html'
-	context = {'contactform' : new_contact}
-	return render(request, template, context)
+class CategoryDelete(DeleteView):
+	model = Category
+	success_url = reverse_lazy("webcore/_dwa/category-list")
+
+class CategoryList(ListView):
+	model = Category
+	template_name = "webcore/_dwa/category_list.html"
+
+class CategoryDetail(DetailView):
+	model = Category
+	template_name = "webcore/_dwa/category_detail.html"
+
+
+
+#Pages App
+class AddWebsitePage(CreateView):
+	pass
+
+
+
+
+
+
+
+
+
+
+
+#Newsletter App
+class AddEmailToCampaignList(View):
+	template_name = "webcore/form.html"
+	success_url = reverse_lazy("thank-you")
+
+	def get(request, *args, **kwargs):
+		form = EmailMarketingSignUpForm()
+
+		return render(request, template_name, context)
+
+	def post(request, *args, **kwargs):
+		return render(request, template, context)
+		
+	def get_context_data(self, *args, **kwargs):
+		context = super(AddEmailToCampaignList, self).get_context_data(**kwargs)
+		context['title'] = "Newsletter SignUp"
+		return context
+
+
+class EditEmailCampaign(UpdateView):
+	form_class = EmailMarketingSignUpForm
+	pass
+
+
+
+
+
+#Banner App
+class AddBanner(CreateView):
+	pass
+

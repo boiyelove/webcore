@@ -1,6 +1,9 @@
+from datetime import timedelta
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
  
@@ -9,12 +12,22 @@ from allauth.socialaccount.models import SocialAccount
 def get_sentinel_user():
 	return get_user_model.objects.get_or_create(username="deleted")[0]
 
-class Timestamp(models.Model):
-	created_on = models.DateTimeField(auto_now = True)
-	updated_on = models.DateTimeField(auto_now_add = True)
-	published_date = models.DateTimeField(blank=True, null=True)
-	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET(get_sentinel_user))
-	draft = models.BooleanField(default = False)
+def get_sentinel_category():
+	return Category.objects.get_or_create(title="Other")
+
+def get_waittime(t=+1):
+	return timezone.now() - timedelta(hours=t)
+
+def validate_only_one_instance(obj):
+	model = obj.__class__
+	if (model.objects.count() > 0 and obj.id != model.objects.get().id):
+		raise ValidationError("Can only create on instance of %s" % model.__name__)
+
+class _Timestamp(models.Model):
+	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now = True)
+	published_on = models.DateTimeField(null=True, blank=True)
+
 	class Meta:
 		abstract = True
 
@@ -22,9 +35,10 @@ class Timestamp(models.Model):
 		self.published_date = timezone.now()
 		self.save()
 
-class Musthave(Timestamp):
-	title = models.CharField(max_length = 80, unique=True)
-	slug = models.SlugField(unique = True)
+
+class _TitleSlug(_Timestamp):
+	title = models.CharField(max_length = 80, unique=True, default="Sample Title")
+	slug = models.SlugField(unique = True, default="sample_title")
 	class Meta:
 		abstract = True
 
@@ -36,14 +50,28 @@ class Musthave(Timestamp):
 			self.slug = slugify(self.name)
 			super(Category, self).save(*args, **kwargs)
 
+class _AuthorDraft(_TitleSlug):
+	author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET(get_sentinel_user), default=1)
+	draft = models.BooleanField(default = False)
+	active = models.BooleanField(default = True)
 
-class Tag(Musthave):
+	class Meta:
+		abstract = True
+
+	def clean(self):
+		if self.draft == True and self.published_on is not None:
+			raise ValidationError(_('Draft entries may not have a publication date.'))
+		if self.draft == 'published' and self.published_on is None:
+			self.self.published_on = get_waittime()
+
+
+class Tag(_AuthorDraft):
 
 	def get_absolute_url(self):
-			return reverse_lazy('blog:blog_tag_view', kwargs={'slug': self.slug})
+			return reverse_lazy('webcore:webcore_tag_view', kwargs={'slug': self.slug})
 
 
-class Category(Musthave):
+class Category(_AuthorDraft):
 	parent = models.ForeignKey('self', null=True, blank=True)
 	description = models.CharField(max_length = 60, null=True, blank = True)
 
@@ -61,9 +89,13 @@ class Category(Musthave):
 			return None
 
 	def get_absolute_url(self):
-		return reverse_lazy('blog:blog_category', kwargs={'slug': self.slug})
+		return reverse_lazy('webcore:webcore_category', kwargs={'slug': self.slug})
 
-class OnePageModel(Musthave):
+class _OnePageModel(_AuthorDraft):
+	content = models.TextField(default="Sample Content")
+
+	class Meta:
+		abstract = True
 
 	def clean(self):
 		validate_only_one_instance(self)
@@ -71,43 +103,39 @@ class OnePageModel(Musthave):
 
 
 #Default Pages Models
-class About_website(OnePageModel):
-	logo = models.ImageField(upload_to="website_logo")
-	about = models.TextField()
-	address = models.CharField(max_length=100)
-	tel = models.CharField(max_length = 50)
-	email = models.EmailField()
+class About_website(_OnePageModel):
+	logo = models.ImageField(upload_to="website_logo", null=True, blank=True)
+	address = models.CharField(max_length=100, null=True, blank=True)
+	tel = models.CharField(max_length = 50, null=True, blank=True)
 
-class Contact(OnePageModel):
-	name = models.CharField(max_length = 30, null=True)
-	email =models.EmailField()
-	subject = models.CharField(max_length = 30)
-	content = models.TextField()
-	created = models.DateTimeField(auto_now = True, auto_now_add=False)
-	updated = models.DateTimeField(auto_now = False, auto_now_add=True)
+
+class Contacted_Us(models.Model):
+	subject = models.CharField(max_length = 30, default="Sample Subject")
+	email = models.EmailField(default="example@domain.ext")
+	content = models.TextField(default="Sample Message Content")
+
+
+	def clean(self):
+		validate_only_one_instance(self)
+
 
 	def __str__(self):
 		return( '%s - %s', self.email, self.subject)
 
 
 
-class WebsitePage(models.Model):
-	title = models.CharField(max_length = 100)
-	slug = models.SlugField(unique = True)
-	link = models.URLField()
-	content = models.TextField()
+class WebsitePage(_OnePageModel):
+	link = models.URLField(null=True, blank=True)
+	content = models.TextField(default="Sample Web Page Content")
 
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, related_name='profile')
-    photo = models.ImageField(upload_to='profile_photo', null=True)
+class WebProfile(models.Model):
+    user = models.OneToOneField(User, related_name='webcore_profile')
+    photo = models.ImageField(upload_to='webcore/profile_photo', null=True)
  
     def __str__(self):
         return "{}'s profile".format(self.user.username)
- 
-    class Meta:
-        db_table = 'user_profile'
  
     def account_verified(self):
         if self.user.is_authenticated:
@@ -121,22 +149,27 @@ User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
 
 #Default Apps Models
 
-class Banner(Musthave):
+class Banner(_TitleSlug):
 	desc = models.CharField(max_length = 60)
 	btn_link = models.URLField()
 	btn_title = models.CharField(max_length = 18)
 
 
-class EmailMarketingSignUp(Timestamp):
+
+	# Email Newsletter App
+	# NewsLetter SignUp
+class EmailMarketingSignUp(_Timestamp):
 	email = models.EmailField()
 	active = models.BooleanField(default = False)
+	subscriptions = models.ManyToManyField('EmailCampaignCategory')
 
 	def __str__(self):
 		return self.email
 
 
-class EmailMarketingConfirmed(TImestamp):
-	user = models.OneToOneField(settings.AUTH_USER_MODEL)
+	#Newsletter Verification
+class EmailMarketingConfirmed(models.Model):
+	subsriber = models.OneToOneField("EmailMarketingSignUp")
 	activation_key = models.CharField(max_length=200)
 	confirmed = models.BooleanField(default=False)
 
@@ -158,9 +191,6 @@ class EmailMarketingConfirmed(TImestamp):
 		send_mail(subject, message, from_email, [self.user.email], kwargs)
 
 
-
-
-def validate_only_one_instance(obj):
-	model = obj.__class__
-	if (model.objects.count() > 0 and obj.id != model.objects.get().id):
-		raise ValidationError("Can only create on instance of %s" % model.__name__)
+class EmailCampaignCategory(models.Model):
+	title = models.CharField(max_length = 100)
+	active = models.BooleanField(default = True)

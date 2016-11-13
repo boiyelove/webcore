@@ -1,0 +1,15 @@
+{% extends base.html %}
+
+{% block head_title %} {{ head_title }} {% end block %}
+{% block page_title %} {{ page_title }} {% end block %}
+
+{% block content %}
+
+<form method="post" action=".">
+
+{{ form.as_p }}
+
+<input type="submit" value="{{btn_title}}">
+</form>
+
+{% end content %}
