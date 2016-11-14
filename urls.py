@@ -20,11 +20,10 @@ urlpatterns = [
 	#Pages
 	
 	#Email Campaign
-	url(r'^subscribe/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
-	url(r'^subscribe/list/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
-	url(r'^unsubscribe/$', views.AddEmailToCampaignList.as_view(), name = 'contact-us'),
-
-	#Banner
+	url(r'^subscribe/$', views.AddEmailVerification.as_view(), name = 'verify-email-form'),
+	url(r'^subscribe/verify/(?P<verification_key>\w+)/$', views.CheckEmailVerification.as_view(), name = 'verify-email-status'),
+	url(r'^subscribe/(?P<subscriber_id>\d+)/add/(?P<campaign_list>\d+)/$', views.UpdateNewsletterSubscription.as_view(), name = 'add-to-campaign'),
+	url(r'^unsubscribe/(?P<subscriber_id>\d+)/add/(?P<campaign_list>\d+)/$', views.UpdateNewsletterSubscription.as_view(), name = 'remove-from-campaign'),	#Banner
 
 	#Category
 

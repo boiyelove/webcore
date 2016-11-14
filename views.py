@@ -1,11 +1,14 @@
 from django.contrib import messages
-from django.shortcuts import render, HttpResponseRedirect
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import render, HttpResponseRedirect, get_object_or_404
+from django.http import Http404
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import RedirectView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import (ContactForm, 
 					EmailMarketingSignUpForm,
-					CategoryForm
+					CategoryForm,
+					EmailVerificationForm
 					)
 from django.urls import reverse_lazy
 from .models import (Tag,
@@ -16,7 +19,7 @@ from .models import (Tag,
 				WebProfile,
 				Banner,
 				EmailMarketingSignUp,
-				EmailMarketingConfirmed
+				EmailVerification
 				)
 
 
@@ -87,7 +90,7 @@ class CreateCategory(CategoryView, CreateView):
 		return context
 
 class UpdateCatgory(CategoryView, UpdateView):
-	
+
 	def get_context_data(*args, **kwargs):
 		context = super(CreateCategory, self).get_context_data(**kwargs)
 		context['head_title'] = "Update Category"
@@ -125,13 +128,15 @@ class AddWebsitePage(CreateView):
 
 
 #Newsletter App
+# webcore/_dwa/Newsletter
 class AddEmailVerification(CreateView):
 	template_name = "webcore/form.html"
-	form_class= EmailVerification
-	success_url = reverse_lazy("verify-email-detail")
+	form_class= EmailVerificationForm
+	success_url = reverse_lazy("home-page")
+	success_message = "We sent a mail to your mailbox"
 
 	def get_context_data(self, *args, **kwargs):
-		context = super(EmailVerificationView, self).get_context_data(**kwargs)
+		context = super(AddEmailVerification, self).get_context_data(*args, **kwargs)
 		context['head_title'] = "Verify Email"
 		context["page_title"] = "Verify Email"
 		context["btn_title"] = "Verify Email"
@@ -150,6 +155,7 @@ class CheckEmailVerification(RedirectView):
 			ObjEmailVerification.save()
 		except EmailVerification.DoesNotExist():
 			raise Http404
+		self.url = ObjEmailVerification.get_action()
 		return super(CheckEmailVerification, self).get_redirect_url(*args, **kwargs)
 
 	def resend_link():
@@ -157,15 +163,17 @@ class CheckEmailVerification(RedirectView):
 		return objEmailVerification.send_activation_email()
 
 
+class UpdateNewsletterSubscription(UpdateView):
+	template_name = "webcore/form.html"
+	template_suffix=""
+	form_class= EmailMarketingSignUpForm
 
-
-class EditEmailCampaign(UpdateView):
-	form_class = EmailMarketingSignUpForm
-	pass
-
-
-
-
+	def get_context_data(self, *args, **kwargs):
+		context = super(UpdateNewsletterSubscription, self).get_context_data(*args, **kwargs)
+		context['head_title'] = "Update Subscription"
+		context["page_title"] = "Update Subscription"
+		context["btn_title"] = "Update Subscription"
+		return context
 
 #Banner App
 class AddBanner(CreateView):

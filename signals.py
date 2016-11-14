@@ -1,22 +1,21 @@
 from django.conf import settings
-from django.contrib.auth.signals import user_logged_in
+from . import models
 from django.db.models.signals import post_save
-from .models import EmailVerification
 from .utils import code_generator
+from django.dispatch import receiver
 
-
-def emailUnconfirmed(sender, instance, created, *args, **kwargs):
-	user = instance
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+@receiver(post_save, sender=models.EmailVerification)
+def emailUnconfirmed(instance, created, **kwargs):
+	code_exists = True
 	if created:
-		user.is_active = False
-		emailverificationObj, email_is_created = EmailConfirmed.objects.get_or_create(user=user)
-		if email_is_created:
-			base, domain = str(user.email).split("@")
-			activation_key = code_generator(base)[:10]
-			emailverificationObj.slug = activation_key
-			emailverificationObj.save()
-			emailverificationObj.send_activation_email()
+		emailverificationObj, email_is_created = models.EmailVerification.objects.get_or_create(email = instance.email)
+		base, domain = str(instance.email).split("@")
+		while code_exists:
+			verification_key = code_generator(base)[:10]
+			code_exists = models.EmailVerification.filter(slug = verification_key)
+			print("ver key is: %s" % verification_key)
+		emailverificationObj.slug = verification_key
+		emailverificationObj.save()
+		emailverificationObj.send_activation_email()
 
-
-
-post_save.connect(emailUnconfirmed, sender=EmailVerification)

@@ -2,7 +2,7 @@ import random
 import hashlib
 from datetime import datetime
 from django.contrib.auth.models import User
-from .models import EmailConfirmed
+from . import models
 
 def code_generator(codepulse):
 	code = hashlib.sha1(str(random.random()).encode())
@@ -12,4 +12,4 @@ def code_generator(codepulse):
 	return code
 
 def verify_email(email):
-	EmailVerification.objects.get_or_create(email = email)
+	models.EmailVerification.objects.get_or_create(email = email)

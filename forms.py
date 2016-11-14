@@ -7,26 +7,21 @@ from .models import (Tag,
 				WebProfile,
 				Banner,
 				EmailMarketingSignUp,
-				EmailVerification
+				EmailVerification,
+				EmailCampaignCategory
 				)
 
 
 class EmailVerificationForm(forms.ModelForm):
 	class Meta:
 		model = EmailVerification
-		exclude = [	'slug', 'confirmed', 'updated_on', 'created_on' ]
-
+		exclude = [	'slug', 'confirmed', 'updated_on', 'created_on', 'published_on', "action" ]
 
 class EmailMarketingSignUpForm(forms.ModelForm):
+	subscriptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(), queryset=EmailCampaignCategory.objects.all())
 	class Meta:
 		model = EmailMarketingSignUp
 		exclude = ['updated_on', 'created_on', 'active']
-
-
-
-
-
-
 
 
 

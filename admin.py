@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-	EmailMarketingConfirmed,
+	EmailVerification,
 	EmailMarketingSignUp, 
 	Banner,
 	Contacted_Us
@@ -16,7 +16,7 @@ class EmailMarketingSignUpAdmin(admin.ModelAdmin):
 		
 admin.site.register(Banner)
 admin.site.register(Contacted_Us)
-admin.site.register(EmailMarketingConfirmed)
+admin.site.register(EmailVerification)
 admin.site.register(EmailMarketingSignUp, EmailMarketingSignUpAdmin)
 
 

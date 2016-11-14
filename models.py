@@ -1,8 +1,12 @@
 from datetime import timedelta
 from django.db import models
 from django.conf import settings
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.utils import timezone
  
 
@@ -128,6 +132,75 @@ class WebsitePage(_OnePageModel):
 
 
 
+
+
+
+#Default Apps Models
+
+
+
+#Email Verification
+class EmailVerification(_Timestamp):
+	first_name = models.CharField(max_length = 30)
+	last_name = models.CharField(max_length = 30)
+	email = models.EmailField(default = "example@domain.ext", unique=True)
+	slug = models.SlugField(null = True)
+	confirmed = models.BooleanField(default=False)
+	action = models.CharField(max_length =15, default="NEWSLETTER")
+
+	def __str__(self):
+		return self.confirmed
+
+	def send_activation_email(self):
+		print("sending email")
+		verification_url = "%s%s" %(settings.SITE_URL, reverse_lazy("verify-email-status", kwargs={"verification_key":self.slug}))
+		context = {
+			"website": settings.SITE_URL,
+			"verification_url": verification_url,
+			"user": self.first_name,
+		}
+		message = render_to_string("webcore/_dwa/newsletter/verification_message.txt", context)
+		subject = "Activate your email"
+		self.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
+		print("sent email")
+
+	def email_user(self, subject, message, from_email=None, **kwargs):
+		send_mail(subject, message, from_email, [self.email], kwargs)
+
+	def get_action(self):
+		url_action = "/"
+		if self.action == "USER":
+			user = get_object_or_404(User, email=self.email)
+			user.active = True
+			user.save()
+			
+		elif self.action == "NEWSLETTER":
+			objEmailMarketingSignUp, just_created = EmailMarketingSignUp.objects.get_or_create(email = self.email)
+			objEmailMarketingSignUp.active=True
+			objEmailMarketingSignUp.save()
+		return url_action
+
+
+# NewsLetter SignUp
+class EmailMarketingSignUp(_Timestamp):
+	name = models.CharField(max_length = 50, null=True, blank=True)
+	email = models.EmailField()
+	active = models.BooleanField(default = False)
+	subscriptions = models.ManyToManyField('EmailCampaignCategory')
+
+	def __str__(self):
+		return self.email
+
+class EmailCampaignCategory(_TitleSlug):
+	title = models.CharField(max_length = 100)
+	active = models.BooleanField(default = True)
+	parent = models.ForeignKey('self', null=True, blank=True)
+
+	def __str__(self):
+		return self.title
+
+
+#Web Profile App
 class WebProfile(models.Model):
     user = models.OneToOneField(User, related_name='webcore_profile')
     photo = models.ImageField(upload_to='webcore/profile_photo', null=True)
@@ -146,68 +219,7 @@ User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
 
 
 
-#Default Apps Models
-
-
-	# Email Newsletter App
-
-	#Newsletter Verification
-class EmailVerification(models.Model):
-	first_name = models.CharField(max_length = 30)
-	last_name = models.CharField(max_length = 30)
-	email = models.EmailField(default = "example@domain.ext", unique=True)
-	slug = models.SlugField(null = True)
-	confirmed = models.BooleanField(default=False)
-
-	def __str__(self):
-		return self.confirmed
-
-	def send_activation_email(self):
-		activation_url = "%s%s" %(settings.SITE_URL, reverse("marketingactivation_view", args[self.slug]))
-		context = {
-			"activation_key": self.slug,
-			"activation_url": activation_url,
-			"user": self.subsriber.name,
-		}
-		message = render_to_string("newslettersignup/activation_message.txt", context)
-		subject = "Activate your email"
-		self.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
-
-	def email_user(self, subject, message, from_email=None, **kwargs):
-		send_mail(subject, message, from_email, [self.email], kwargs)
-
-	def check_action(self):
-		if self.action == "User":
-			try:
-				user = User.object.get(email = self.email)
-				user.active = True
-				return "Thank You"
-		elif self.action == "Newsletter":
-			objEmailMarketingSignUp, just_created = EmailMarketingSignUp.objects.get_or_create(email = self.email)
-			if just_created:
-				page_message = "You have successfully subscribed"
-			return "Thank You"
-			
-
-	# NewsLetter SignUp
-class EmailMarketingSignUp(_Timestamp):
-	name = models.CharField(max_length = 50, null=True, blank=True)
-	email = models.EmailField()
-	active = models.BooleanField(default = False)
-	subscriptions = models.ManyToManyField('EmailCampaignCategory')
-
-	def __str__(self):
-		return self.email
-
-class EmailCampaignCategory(models.Model):
-	title = models.CharField(max_length = 100)
-	active = models.BooleanField(default = True)
-
-
-
-
 #Banner
-
 class Banner(_TitleSlug):
 	desc = models.CharField(max_length = 60)
 	btn_link = models.URLField()
