@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 from .models import (Tag,
 				Category,
 				About_website,
@@ -8,24 +7,37 @@ from .models import (Tag,
 				WebProfile,
 				Banner,
 				EmailMarketingSignUp,
-				EmailMarketingConfirmed
+				EmailVerification
 				)
 
 
-class EmailMarketingSignUpForm(ModelForm):
+class EmailVerificationForm(forms.ModelForm):
+	class Meta:
+		model = EmailVerification
+		exclude = [	'slug', 'confirmed', 'updated_on', 'created_on' ]
+
+
+class EmailMarketingSignUpForm(forms.ModelForm):
 	class Meta:
 		model = EmailMarketingSignUp
 		exclude = ['updated_on', 'created_on', 'active']
 
-	def clean(self, *args, **kwargs):
-		return form
 
-class ContactForm(ModelForm):
+
+
+
+
+
+
+
+
+
+class ContactForm(forms.ModelForm):
 	class Meta:
 		model = Contacted_Us
 		exclude = ['updated_on', 'created_on', 'active']
 
-class CategoryForm(ModelForm):
+class CategoryForm(forms.ModelForm):
 	class Meta:
 		model = Category
 		exclude = ['updated_on', 'created_on', 'author', 'active']

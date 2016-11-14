@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, HttpResponseRedirect
 from django.views.generic import DetailView, ListView
-from django.views.generic.base import TemplateView, View
+from django.views.generic.base import RedirectView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import (ContactForm, 
 					EmailMarketingSignUpForm,
@@ -125,22 +125,38 @@ class AddWebsitePage(CreateView):
 
 
 #Newsletter App
-class AddEmailToCampaignList(View):
+class AddEmailVerification(CreateView):
 	template_name = "webcore/form.html"
-	success_url = reverse_lazy("thank-you")
+	form_class= EmailVerification
+	success_url = reverse_lazy("verify-email-detail")
 
-	def get(request, *args, **kwargs):
-		form = EmailMarketingSignUpForm()
-
-		return render(request, template_name, context)
-
-	def post(request, *args, **kwargs):
-		return render(request, template, context)
-		
 	def get_context_data(self, *args, **kwargs):
-		context = super(AddEmailToCampaignList, self).get_context_data(**kwargs)
-		context['title'] = "Newsletter SignUp"
+		context = super(EmailVerificationView, self).get_context_data(**kwargs)
+		context['head_title'] = "Verify Email"
+		context["page_title"] = "Verify Email"
+		context["btn_title"] = "Verify Email"
 		return context
+
+class CheckEmailVerification(RedirectView):
+	query_string  = True
+	pattern_name = "thank-you"
+
+	def get_redirect_url(self, *args, **kwars):
+		ObjEmailVerification = args["activation_key"]
+		try:
+			ObjEmailVerification = EmailVerification.objects.get(slug = ObjEmailVerification)
+			ObjEmailVerification.confimed = True
+			ObjEmailVerification.slug = None
+			ObjEmailVerification.save()
+		except EmailVerification.DoesNotExist():
+			raise Http404
+		return super(CheckEmailVerification, self).get_redirect_url(*args, **kwargs)
+
+	def resend_link():
+		objEmailVerification = super(CheckEmailVerification).get_object(self, *args, **kwargs)
+		return objEmailVerification.send_activation_email()
+
+
 
 
 class EditEmailCampaign(UpdateView):
