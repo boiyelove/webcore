@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<meta property="og:url"                content="http://localhost:8000/" />
+<meta property="og:type"               content="article" />
+<meta property="og:title"              content="Check out this forecast on CASSIE: {{ poll.question }}"/>
+<meta property="og:description"        content="Join Cassie to forecast this and more! See how accurate you are at \
+                                                predicting the future!" />
+<meta property="og:image"              content="{{MEDIA_URL }}/social/logo_words.png" />
+
+
+<title>{% block head_title %} {{ page_title }} {% endblock %} | Work Flow</title>
+<!-- Style Sheets -->
+<link href="http://localhost/repo/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="{% static '/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Lato|Roboto' %}" rel="stylesheet">
+<link href="{% static '/css/style.css' %}" rel="stylesheet">
+
+<script src="http://localhost/repo/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="http://localhost/repo/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="http://localhost/repo/bower_components/fingerprintjs2/dist/fingerprint2.min.js"></script>
+<script type="text/javascript">
+	new Fingerprint2().get(function(result, components){
+  console.log('result is', result); //a hash, representing your device fingerprint
+  console.log('components are', components); // an array of FP components
+});
+</script>
+<script src="{% static '/js/scripts.js' %}" ></script>
+
+
+</head>
+
+<body>
+{% include 'webcore/_shared/navbar.html' %}
+{% url 'webcore:home-page' as homepage_url %}
+<section id="notices">
+<div class="row">
+	<div class="text-center">
+		{% for msg in messages %}
+			
+	<div class="alert 
+	{% if msg.tags == 'error' %} alert-danger {% elif msg.tags == 'debug' %} alert-warning 
+	{% else %}  alert-{{msg.tags}} {% endif %} alert-dismissible fade in" role="alert">
+    <div class="container">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+     <strong> {% if msg.tags == 'info' %} Please Note!
+	{% elif msg.tags == 'success' %} Great!
+	{% elif msg.tags == 'error' %} Oops!
+	{% elif msg.tags == 'debug' %} Aw!
+	{% endif %}</strong> {{msg}}
+		</div>
+    </div>
+		{% empty %}
+
+		{% endfor %}
+	</div>
+</div>
+</section>
+
+{% if page_header %}
+{% include 'webcore/_shared/header.html' %}
+{% endif %}
+<section id="content">
+
+
+
+	{% block content %}
+
+	{% endblock %}
+
+</section>
+{% include 'webcore/_shared/footer.html' %}
+{% include 'webcore/_shared/modal.html' %}
+<script type="text/javascript">
+	$('textarea').addClass('form-control');
+	$('textarea').attr('placeholder', 'Type your text here...');
+	$('textarea').attr('maxlength', '2600');
+</script>
+</body>
+</html>

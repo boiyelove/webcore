@@ -1,0 +1,10 @@
+{% for topic in support_topics %}
+<p> 
+{{ topic }}
+{{ topic.dateCreated }}
+{{topic.id}}
+</p>
+
+{% empty %}
+	No Tickets Added
+{% endfor %}

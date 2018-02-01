@@ -1,0 +1,113 @@
+<nav class="navbar">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">WorkFLow</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#" data-toggle="tooltip" data-placement="top" title="Home"><i class="fa fa-home" aria-hidden="true"></i></a></li>
+       <li class="active"><a href="#" data-toggle="tooltip" data-placement="top" title="Projects"><i class="fa fa-suitcase" aria-hidden="true"></i><span class="sr-only">(current)</span></a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" data-toggle="tooltip" data-placement="top" title="Notifications" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-bell" aria-hidden="true"></i></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+        <li><a href="#" data-toggle="tooltip" data-placement="top" title="Teams"><i class="fa fa-users" aria-hidden="true"></i></a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" data-toggle="tooltip" data-placement="top" title="Messages" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-envelope" aria-hidden="true"></i></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+
+        <li><a href="#" data-toggle="tooltip" data-placement="top" title="Tasks"><i class="fa fa-tasks" aria-hidden="true"></i></a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-toggle="tooltip" data-placement="top" title="My Account"  aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-gear" aria-hidden="true"></i> 
+          </a>
+          <ul class="dropdown-menu">
+           {% if request.user.is_authenticated %}
+           <li><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+           <li><a href="{% url 'accounts:userprofile' %}">My Profile</a></li>
+           <li><a href="{% url 'accounts:userbank-details' %}">My Payment Information</a></li>
+           <li role="separator" class="divider"></li>
+           <li><a href="#">Programs</a></li>
+           <li><a href="#">Support</a></li>
+           <li role="separator" class="divider"></li>
+           <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+           {% else %}
+           <li><a href="{% url 'accounts:login' %}">Login</a></li>
+           <li><a href="{% url 'accounts:get-invited' %}">Register</a></li>
+           {% endif %}
+         </ul>
+       </li>
+     </ul>
+   </div><!-- /.navbar-collapse -->
+ </div>
+
+</nav>
+
+{% comment "navbefore" %}
+<nav class="navbar">
+  <div class="container">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <i class="fa fa-bars"></i>
+        </button>
+
+  <a class="navbar-brand" href="{% url 'webcore:home-page' %}">revenupa.org</a>
+  </div>
+    <div class="collapse navbar-collapse pull-right" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'webcore:home-page' %}">Home<span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Ideology</a></li>
+            <li><a href="{% url 'revprograms:program-list' %}">Programs</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="{% url 'webcore:contact-us' %}">Contact Us</a></li>
+          <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My Account<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                 {% if request.user.is_authenticated %}
+                     <li><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'accounts:userprofile' %}">My Profile</a></li>
+                    <li><a href="{% url 'accounts:donatemethod-list' %}">My Payment Information</a></li>
+                    <li role="separator" class="divider"></li>
+                     <li><a href="#">Programs</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                {% endif %}
+                </ul>
+              </li>
+
+          </ul>
+    </div>
+</nav>
+{% endcomment %}

@@ -2,8 +2,14 @@ Hello {{user}}
 
 You recently requested a service on {{website}}.
 
-Click here >> {{verification_url}} << to verify your email 
+Click here to verify your email 
 
 Alternatively, you can copy the link below into your browser
 
- {{verification_url}}
+ {{verification_key}}
+
+Regards
+
+{{website}} Team
+
+

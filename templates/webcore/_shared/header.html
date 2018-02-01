@@ -1,0 +1,17 @@
+
+<section id='header'>
+  <div class='jumbotron'>
+    <div class='container'>
+        {% block header %}
+                <h2>{{page_header}} <br> {% if page_tagline %} <small>{{ page_tagline }}</small>{% endif %}</h2>
+                {% if not request.user.is_authenticated %}
+                <h3 class='text-left'>Enter your email address below</h3>
+                <form class='form-inline' method='post' action='{% url 'accounts:get-invited' %}'>
+                    {% csrf_token %}
+                    <input type='text' class='form-control' placeholder='email' name='email'><button type='submit' class='btn btn-default'>Send invitation</button>
+                </form>
+                {% endif %}
+        {% endblock %}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,10 @@
+{{ ticket_topic }}
+{{ ticket_topic.id }}
+{{ ticket_topic.dateCreated }}
+
+{% for message in ticket_topic.supportmessage %}
+<p>
+{{ supportmessage }}
+{{ supportmessage.dateCreated }}
+</p>
+{% endfor %}

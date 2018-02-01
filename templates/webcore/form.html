@@ -1,15 +1,11 @@
-{% extends "webcore/webcore_base.html" %}
+{% if form_title %}
+<h3>{{form_title}}</h3>
+{% endif %}
 
-{% block head_title %} {{ head_title }} {% endblock %}
-{% block page_title %} {{ page_title }} {% endblock %}
+<form {% if form.is_multipart %} enctype="multipart/form-data" {% endif %} method="POST" action="."> 
 
-{% block content %}
-
-<form method="post" action=".">
 {% csrf_token %}
-{{ form.as_p }}
 
-<input type="submit" value="{{btn_title}}">
+	{{form.as_p}}
+<button class="btn btn-success" type="submit">Submit</button>
 </form>
-
-{% endblock %}
